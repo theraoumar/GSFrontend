@@ -1,0 +1,51 @@
+<ion-content class="ion-padding">
+  <div class="login-container">
+    <div class="logo-section">
+      <ion-img src="assets/logo.png" alt="Logo" class="logo"></ion-img>
+      <h1>Connexion</h1>
+      <p>Connectez-vous à votre compte</p>
+    </div>
+
+    <form (ngSubmit)="login()" class="form-section">
+      <ion-item>
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input 
+          type="email" 
+          [(ngModel)]="credentials.email" 
+          name="email" 
+          required
+          placeholder="votre@email.com">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Mot de passe</ion-label>
+        <ion-input 
+          type="password" 
+          [(ngModel)]="credentials.password" 
+          name="password" 
+          required
+          placeholder="Votre mot de passe">
+        </ion-input>
+      </ion-item>
+
+      <ion-button 
+        type="submit" 
+        expand="block" 
+        class="login-button"
+        [disabled]="!credentials.email || !credentials.password">
+        Se connecter
+      </ion-button>
+    </form>
+
+    <div class="register-section">
+      <p>Vous n'avez pas de compte ?</p>
+      <ion-button 
+        fill="clear" 
+        expand="block" 
+        (click)="goToRegister()">
+        Créer un compte
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

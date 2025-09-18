@@ -1,0 +1,96 @@
+<ion-content class="ion-padding">
+  <div class="auth-container">
+    <div class="logo-section">
+      <ion-icon name="leaf" class="auth-logo"></ion-icon>
+      <h1>Créer un compte</h1>
+      <p>Rejoignez notre boutique de fruits</p>
+    </div>
+
+    <form (ngSubmit)="register()" class="form-section" #registerForm="ngForm">
+      <ion-item [class.invalid]="nameInvalid">
+        <ion-label position="stacked">Nom complet</ion-label>
+        <ion-input 
+          type="text" 
+          [(ngModel)]="user.name" 
+          name="name" 
+          required
+          minlength="2"
+          #name="ngModel"
+          placeholder="Votre nom complet"
+          (ionBlur)="checkName()">
+        </ion-input>
+        <ion-note slot="error" *ngIf="nameInvalid">
+          Le nom doit contenir au moins 2 caractères
+        </ion-note>
+      </ion-item>
+
+      <ion-item [class.invalid]="emailInvalid">
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input 
+          type="email" 
+          [(ngModel)]="user.email" 
+          name="email" 
+          required
+          pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+          #email="ngModel"
+          placeholder="votre@email.com"
+          (ionBlur)="checkEmail()">
+        </ion-input>
+        <ion-note slot="error" *ngIf="emailInvalid">
+          Veuillez entrer un email valide
+        </ion-note>
+      </ion-item>
+
+      <ion-item [class.invalid]="passwordInvalid">
+        <ion-label position="stacked">Mot de passe</ion-label>
+        <ion-input 
+          type="password" 
+          [(ngModel)]="user.password" 
+          name="password" 
+          required
+          minlength="6"
+          #password="ngModel"
+          placeholder="Créez un mot de passe"
+          (ionBlur)="checkPassword()">
+        </ion-input>
+        <ion-note slot="error" *ngIf="passwordInvalid">
+          Le mot de passe doit contenir au moins 6 caractères
+        </ion-note>
+      </ion-item>
+
+      <ion-item [class.invalid]="confirmPasswordInvalid">
+        <ion-label position="stacked">Confirmer le mot de passe</ion-label>
+        <ion-input 
+          type="password" 
+          [(ngModel)]="user.confirmPassword" 
+          name="confirmPassword" 
+          required
+          #confirmPassword="ngModel"
+          placeholder="Confirmez votre mot de passe"
+          (ionBlur)="checkConfirmPassword()">
+        </ion-input>
+        <ion-note slot="error" *ngIf="confirmPasswordInvalid">
+          Les mots de passe ne correspondent pas
+        </ion-note>
+      </ion-item>
+
+      <ion-button 
+        type="submit" 
+        expand="block" 
+        class="submit-button"
+        [disabled]="!registerForm.valid || user.password !== user.confirmPassword">
+        Créer mon compte
+      </ion-button>
+    </form>
+
+    <div class="auth-link">
+      <p>Vous avez déjà un compte ?</p>
+      <ion-button 
+        fill="clear" 
+        expand="block" 
+        (click)="goToLogin()">
+        Se connecter
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

@@ -1,20 +1,45 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Blank
+      Fruits Boutique
     </ion-title>
+    
+    <ion-buttons slot="end">
+      <!-- Si l'utilisateur est connecté -->
+      <ion-button *ngIf="authService.isAuthenticated()" (click)="goToDashboard()">
+        <ion-icon name="person-circle" slot="icon-only"></ion-icon>
+      </ion-button>
+      
+      <ion-button *ngIf="authService.isAuthenticated()" (click)="logout()">
+        <ion-icon name="log-out" slot="icon-only"></ion-icon>
+      </ion-button>
+      
+      <!-- Si l'utilisateur n'est pas connecté -->
+      <ion-button *ngIf="!authService.isAuthenticated()" (click)="goToLogin()">
+        <ion-icon name="log-in" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="welcome-container">
+    <h1>Bienvenue sur Fruits Boutique</h1>
+    <p>Découvrez nos délicieux fruits frais</p>
+    
+    <div class="auth-buttons" *ngIf="!authService.isAuthenticated()">
+      <ion-button expand="block" (click)="goToLogin()">Se connecter</ion-button>
+      <ion-button expand="block" fill="outline" (click)="goToRegister()">Créer un compte</ion-button>
+    </div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <div class="dashboard-button" *ngIf="authService.isAuthenticated()">
+      <ion-button expand="block" color="success" (click)="goToDashboard()">
+        <ion-icon name="person" slot="start"></ion-icon>
+        Mon tableau de bord
+      </ion-button>
+    </div>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+    <div class="fruits-preview">
+      <!-- Votre contenu existant avec les fruits -->
+    </div>
   </div>
 </ion-content>
