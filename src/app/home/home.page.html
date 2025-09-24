@@ -39,7 +39,22 @@
     </div>
 
     <div class="fruits-preview">
-      <!-- Votre contenu existant avec les fruits -->
+      <h2>Nos fruits populaires</h2>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6" *ngFor="let fruit of popularFruits">
+            <ion-card>
+              <img [src]="fruit.imageUrl" alt="{{ fruit.name }}">
+              <ion-card-header>
+                <ion-card-title>{{ fruit.name }}</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                {{ fruit.description }}
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </div>
   </div>
 </ion-content>

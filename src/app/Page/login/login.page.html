@@ -6,23 +6,25 @@
       <p>Connectez-vous à votre compte</p>
     </div>
 
-    <form (ngSubmit)="login()" class="form-section">
+    <form #data="ngForm" (ngSubmit)="login(data)" class="form-section">
       <ion-item>
-        <ion-label position="stacked">Email</ion-label>
+        <ion-label position="stacked">Username</ion-label>
         <ion-input 
-          type="email" 
-          [(ngModel)]="credentials.email" 
-          name="email" 
+          id="username"
+          type="username"
+          ngModel
+          name="username" 
           required
-          placeholder="votre@email.com">
+          placeholder="Votre username">
         </ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Mot de passe</ion-label>
         <ion-input 
+          id="password"
           type="password" 
-          [(ngModel)]="credentials.password" 
+          ngModel
           name="password" 
           required
           placeholder="Votre mot de passe">
@@ -32,13 +34,12 @@
       <ion-button 
         type="submit" 
         expand="block" 
-        class="login-button"
-        [disabled]="!credentials.email || !credentials.password">
+        class="login-button">
         Se connecter
       </ion-button>
     </form>
 
-    <div class="register-section">
+    <!-- <div class="register-section">
       <p>Vous n'avez pas de compte ?</p>
       <ion-button 
         fill="clear" 
@@ -46,6 +47,6 @@
         (click)="goToRegister()">
         Créer un compte
       </ion-button>
-    </div>
+    </div> -->
   </div>
 </ion-content>
