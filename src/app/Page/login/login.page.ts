@@ -49,31 +49,55 @@ export class LoginPage implements OnInit {
   //   }
   // }
 
+  // login(data: NgForm) {
+  //   if (data.valid) {
+  //     this.error='Username ou mot de passe incorrect';
+  //     return;
+  //   }
+  //   this.apiService.login(data)
+  //     .subscribe({
+  //     next: (res:any) => {
+  //       console.log(res);
+  //       if(res ){
+  //         localStorage.setItem('token', res.role);
+  //         console.log(res);
+  //         this.alertController.create({
+  //           header: 'Succès',
+  //           message: 'Connexion réussie!',
+  //           buttons: ['OK']
+  //         }).then(alert => alert.present());
+  //         this.router.navigate(['/dashboard']);
+  //       };
+  //       }
+  //     });
+  // }
+
   login(data: NgForm) {
-    if (data.valid) {
-      this.error='Username ou mot de passe incorrect';
-      return;
-    }
-    this.apiService.login(data)
-      .subscribe({
-      next: (res:any) => {
-        console.log(res);
-        if(res ){
-          localStorage.setItem('token', res.role);
-          console.log(res);
-          this.alertController.create({
-            header: 'Succès',
-            message: 'Connexion réussie!',
-            buttons: ['OK']
-          }).then(alert => alert.present());
-          this.router.navigate(['/dashboard']);
-        };
-        }
-      });
-
-
-
+  if (!data.valid) {
+    this.error = 'Formulaire invalide';
+    return;
   }
+
+  this.apiService.login(data.value).subscribe({
+    next: (res:any) => {
+      console.log("Réponse backend:", res);
+      if (res?.token) {
+        localStorage.setItem('token', res.token);
+        this.alertController.create({
+          header: 'Succès',
+          message: 'Connexion réussie!',
+          buttons: ['OK']
+        }).then(alert => alert.present());
+        this.router.navigate(['/dashboard']);
+      }
+    },
+    error: (err) => {
+      console.error("Erreur backend:", err);
+      this.error = 'Username ou mot de passe incorrect';
+    }
+  });
+}
+
 
 
   // goToRegister() {
