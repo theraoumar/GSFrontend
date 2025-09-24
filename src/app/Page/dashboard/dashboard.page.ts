@@ -40,13 +40,7 @@ export class DashboardPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    // Récupérer les informations de l'utilisateur
-    this.user = await this.authService.getCurrentUser();
-    
-    // Rediriger vers la page de login si non connecté
-    if (!this.user) {
-      this.router.navigate(['/login']);
-    }
+   
   }
 
   logout() {

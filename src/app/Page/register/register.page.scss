@@ -1,66 +1,46 @@
-.auth-container {
+.container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   height: 100%;
+  justify-content: center;
   max-width: 400px;
   margin: 0 auto;
-  
-  .logo-section {
-    text-align: center;
-    margin-bottom: 2rem;
-    
-    .auth-logo {
-      font-size: 64px;
-      color: var(--ion-color-primary);
-      margin-bottom: 1rem;
-    }
-    
-    h1 {
-      color: var(--ion-color-primary);
-      margin-bottom: 0.5rem;
-    }
-    
-    p {
-      color: var(--ion-color-medium);
-    }
-  }
-  
-  .form-section {
-    ion-item {
-      margin-bottom: 1rem;
-      --border-radius: 8px;
-    }
-    
-    .submit-button {
-      margin-top: 1.5rem;
-    }
-  }
-  
-  .auth-link {
-    text-align: center;
-    margin-top: 2rem;
-    
-    p {
-      color: var(--ion-color-medium);
-      margin-bottom: 0.5rem;
-    }
-  }
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
-  .auth-container {
-    padding: 16px;
+.form-container {
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 2rem;
+  color: var(--ion-color-primary);
+}
+
+ion-item {
+  margin-bottom: 1rem;
+  --background: transparent;
+}
+
+.error-message {
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.submit-button {
+  margin: 2rem 0 1rem 0;
+}
+
+.login-link {
+  margin-top: 2rem;
+  
+  .link {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    cursor: pointer;
     
-    .logo-section {
-      .auth-logo {
-        font-size: 48px;
-      }
-      
-      h1 {
-        font-size: 1.5rem;
-      }
+    &:hover {
+      text-decoration: underline;
     }
   }
 }

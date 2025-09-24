@@ -30,48 +30,10 @@ export class LoginPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    // Vérifier si l'utilisateur est déjà connecté
-    // if (this.authService.isAuthenticated()) {
-    //   this.router.navigate(['/dashboard']);
-    // }
+   
   }
 
-  // async loginSimulation() {
-  //   try {
-  //     const success = await this.authService.login(this.credentials);
-  //     if (success) {
-  //       this.router.navigate(['/dashboard']);
-  //     } else {
-  //       this.showAlert('Erreur de connexion', 'Username ou mot de passe incorrect.');
-  //     }
-  //   } catch (error) {
-  //     this.showAlert('Erreur', 'Une erreur est survenue lors de la connexion.');
-  //   }
-  // }
-
-  // login(data: NgForm) {
-  //   if (data.valid) {
-  //     this.error='Username ou mot de passe incorrect';
-  //     return;
-  //   }
-  //   this.apiService.login(data)
-  //     .subscribe({
-  //     next: (res:any) => {
-  //       console.log(res);
-  //       if(res ){
-  //         localStorage.setItem('token', res.role);
-  //         console.log(res);
-  //         this.alertController.create({
-  //           header: 'Succès',
-  //           message: 'Connexion réussie!',
-  //           buttons: ['OK']
-  //         }).then(alert => alert.present());
-  //         this.router.navigate(['/dashboard']);
-  //       };
-  //       }
-  //     });
-  // }
-
+ 
   login(data: NgForm) {
   if (!data.valid) {
     this.error = 'Formulaire invalide';
@@ -83,6 +45,7 @@ export class LoginPage implements OnInit {
       console.log("Réponse backend:", res);
       if (res?.token) {
         localStorage.setItem('token', res.token);
+        localStorage.setItem('role', res.role);
         this.alertController.create({
           header: 'Succès',
           message: 'Connexion réussie!',
@@ -97,13 +60,9 @@ export class LoginPage implements OnInit {
     }
   });
 }
-
-
-
-  // goToRegister() {
-  //   this.router.navigate(['/register']);
-  // }
-
+goToRegister() {
+    this.router.navigate(['/register']);
+  }
   private async showAlert(header: string, message: string) {
     const alert = await this.alertController.create({
       header,

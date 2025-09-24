@@ -1,9 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { IonicModule, AlertController, ToastController } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
+import { ApiService } from 'src/app/services/api-service';
 
 @Component({
   selector: 'app-register',
@@ -13,75 +14,119 @@ import { AuthService } from '../../services/auth-service';
   imports: [IonicModule, CommonModule, FormsModule]
 })
 export class RegisterPage implements OnInit {
-  @ViewChild('registerForm', { static: false }) registerForm!: NgForm;
-  
-  user = {
-    name: '',
-    email: '',
+  error: string = '';
+  credentials = {
+    username: '',
     password: '',
     confirmPassword: ''
   };
-
-  nameInvalid = false;
-  emailInvalid = false;
-  passwordInvalid = false;
-  confirmPasswordInvalid = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private alertController: AlertController,
-    private toastController: ToastController
+    private apiService: ApiService
   ) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
-  async register() {
-    if (this.user.password !== this.user.confirmPassword) {
-      this.showAlert('Erreur', 'Les mots de passe ne correspondent pas.');
+  // register(data: NgForm) {
+  //   if (!data.valid) {
+  //     this.error = 'Formulaire invalide';
+  //     return;
+  //   }
+
+  //   if (this.credentials.password !== this.credentials.confirmPassword) {
+  //     this.error = 'Les mots de passe ne correspondent pas';
+  //     return;
+  //   }
+
+  //   if (this.credentials.password.length < 6) {
+  //     this.error = 'Le mot de passe doit contenir au moins 6 caractères';
+  //     return;
+  //   }
+
+    
+
+  //   this.apiService.register(data.value).subscribe({
+  //     next: (res: any) => {
+  //       console.log("Réponse backend:", res);
+  //       if (res?.success || res?.token) {
+  //         // Si le backend retourne un token directement
+  //         if (res.token) {
+  //           console.log("Token reçu", res);
+  //           localStorage.setItem('token', res.token);
+  //           localStorage.setItem('role', res.role || 'user');
+  //         }
+          
+  //         this.alertController.create({
+  //           header: 'Succès',
+  //           message: 'Inscription réussie! Vous pouvez maintenant vous connecter.',
+  //           buttons: ['OK']
+  //         }).then(alert => {
+  //           alert.present();
+  //           alert.onDidDismiss().then(() => {
+  //             this.router.navigate(['/login']);
+  //           });
+  //         });
+  //       }
+  //     },
+  //     error: (err: any) => { // Type explicit pour err
+  //       console.error("Erreur backend:", err);
+  //       if (err.error?.message) {
+  //         this.error = err.error.message;
+  //       } else if (err.status === 400) {
+  //         this.error = 'Données invalides';
+  //       } else {
+  //         this.error = 'Erreur lors de l\'inscription. Veuillez réessayer.';
+  //       }
+  //     }
+  //   });
+  // }
+
+    register(data: NgForm) {
+    if (!data.valid) {
+      this.error = 'Formulaire invalide';
       return;
     }
-
-    try {
-      const success = await this.authService.register(this.user);
-      if (success) {
-        const toast = await this.toastController.create({
-          message: 'Votre compte a été créé avec succès!',
-          duration: 3000,
-          color: 'success',
-          position: 'top'
-        });
-        await toast.present();
+    this.apiService.register(data.value).subscribe({
+      next: (res: any) => {
+        console.log("Réponse backend:", res);
+        if (res) {
         
-        this.router.navigate(['/login']);
-      } else {
-        this.showAlert('Erreur', "Impossible de créer le compte. L'email est peut-être déjà utilisé.");
+            console.log("Token reçu si y en a ", res);
+            localStorage.setItem('token', res.token);
+            localStorage.setItem('role', res.role || 'user');
+          
+          this.alertController.create({
+            header: 'Succès',
+            message: 'Inscription réussie! Vous pouvez maintenant vous connecter.',
+            buttons: ['OK']
+          }).then(alert => {
+            alert.present();
+            alert.onDidDismiss().then(() => {
+              this.router.navigate(['/login']);
+            });
+          });
+        }
+      },
+      error: (err: any) => { // Type explicit pour err
+        console.error("Erreur backend:", err);
+        if (err.error?.message) {
+          this.error = err.error.message;
+        } else if (err.status === 400) {
+          this.error = 'Données invalides';
+        } else {
+          this.error = 'Erreur lors de l\'inscription. Veuillez réessayer.';
+        }
       }
-    } catch (error) {
-      this.showAlert('Erreur', 'Une erreur est survenue lors de la création du compte.');
+    });
+
     }
-  }
+
 
   goToLogin() {
     this.router.navigate(['/login']);
-  }
-
-  checkName() {
-    this.nameInvalid = this.user.name.length < 2;
-  }
-
-  checkEmail() {
-    const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-    this.emailInvalid = !emailPattern.test(this.user.email);
-  }
-
-  checkPassword() {
-    this.passwordInvalid = this.user.password.length < 6;
-  }
-
-  checkConfirmPassword() {
-    this.confirmPasswordInvalid = this.user.password !== this.user.confirmPassword;
   }
 
   private async showAlert(header: string, message: string) {
