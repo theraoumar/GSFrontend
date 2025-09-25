@@ -41,18 +41,17 @@
               </ion-item>
             </ion-col>
 
-            <!-- Catégorie -->
+            <!-- Catégorie (optionnelle - côté frontend seulement) -->
             <ion-col size="12" size-md="6">
               <ion-item>
                 <ion-label position="stacked">
-                  Catégorie <ion-text color="danger">*</ion-text>
+                  Catégorie (optionnel)
                 </ion-label>
                 <ion-select 
                   placeholder="Sélectionner une catégorie"
                   [(ngModel)]="product.category"
                   name="category"
-                  interface="action-sheet"
-                  required>
+                  interface="action-sheet">
                   <ion-select-option *ngFor="let category of categories" [value]="category">
                     {{category}}
                   </ion-select-option>
@@ -80,11 +79,11 @@
               </ion-item>
             </ion-col>
 
-            <!-- Quantité initiale -->
+            <!-- Quantité -->
             <ion-col size="12" size-md="6">
               <ion-item>
                 <ion-label position="stacked">
-                  Quantité initiale
+                  Quantité <ion-text color="danger">*</ion-text>
                 </ion-label>
                 <ion-input 
                   type="number" 
@@ -93,67 +92,25 @@
                   name="quantity"
                   min="0"
                   step="1"
-                  (ionChange)="onQuantityChange()">
+                  required>
                 </ion-input>
               </ion-item>
             </ion-col>
           </ion-row>
 
-          <ion-row>
-            <!-- Stock minimum -->
-            <ion-col size="12" size-md="6">
-              <ion-item>
-                <ion-label position="stacked">
-                  Stock minimum <ion-text color="danger">*</ion-text>
-                </ion-label>
-                <ion-input 
-                  type="number" 
-                  placeholder="0"
-                  [(ngModel)]="product.minStock"
-                  name="minStock"
-                  min="0"
-                  step="1"
-                  (ionChange)="onMinStockChange()"
-                  required>
-                </ion-input>
-              </ion-item>
-            </ion-col>
-
-            <!-- Fournisseur -->
-            <ion-col size="12" size-md="6">
-              <ion-item>
-                <ion-label position="stacked">
-                  Fournisseur <ion-text color="danger">*</ion-text>
-                </ion-label>
-                <ion-select 
-                  placeholder="Sélectionner un fournisseur"
-                  [(ngModel)]="product.supplier"
-                  name="supplier"
-                  interface="action-sheet"
-                  required>
-                  <ion-select-option *ngFor="let supplier of suppliers" [value]="supplier">
-                    {{supplier}}
-                  </ion-select-option>
-                </ion-select>
-              </ion-item>
-            </ion-col>
-          </ion-row>
-
-          <!-- Statut (lecture seule) -->
+          <!-- Statut (calculé côté frontend) -->
           <ion-row>
             <ion-col size="12">
               <ion-item>
-                <ion-label position="stacked">Statut du stock</ion-label>
+                <ion-label position="stacked">Statut du stock (calculé)</ion-label>
                 <ion-input 
-                  [value]="getStatusText(product.status)" 
+                  [value]="getStatusText()" 
                   readonly
-                  [class]="'status-' + product.status">
+                  [class]="'status-' + getStatusColor()">
                 </ion-input>
               </ion-item>
               <div class="status-help">
-                <small>
-                  Le statut est calculé automatiquement en fonction de la quantité et du stock minimum.
-                </small>
+                <small>Le statut est calculé automatiquement en fonction de la quantité.</small>
               </div>
             </ion-col>
           </ion-row>
@@ -205,10 +162,6 @@
           <ion-col size="6">{{product.name || 'Non spécifié'}}</ion-col>
         </ion-row>
         <ion-row>
-          <ion-col size="6"><strong>Catégorie:</strong></ion-col>
-          <ion-col size="6">{{product.category || 'Non spécifié'}}</ion-col>
-        </ion-row>
-        <ion-row>
           <ion-col size="6"><strong>Prix:</strong></ion-col>
           <ion-col size="6">{{product.price || 0 | currency:'EUR':'symbol':'1.2-2'}}</ion-col>
         </ion-row>
@@ -217,14 +170,10 @@
           <ion-col size="6">{{product.quantity || 0}} unités</ion-col>
         </ion-row>
         <ion-row>
-          <ion-col size="6"><strong>Stock minimum:</strong></ion-col>
-          <ion-col size="6">{{product.minStock || 0}} unités</ion-col>
-        </ion-row>
-        <ion-row>
           <ion-col size="6"><strong>Statut:</strong></ion-col>
           <ion-col size="6">
-            <ion-badge [color]="getStatusColor(product.status)">
-              {{getStatusText(product.status)}}
+            <ion-badge [color]="getStatusColor()">
+              {{getStatusText()}}
             </ion-badge>
           </ion-col>
         </ion-row>

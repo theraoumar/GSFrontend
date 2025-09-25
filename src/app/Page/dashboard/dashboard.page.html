@@ -52,7 +52,7 @@
 
         <!-- Stock faible -->
         <ion-col size="12" size-md="3">
-          <ion-card class="stat-card low-stock" (click)="navigateToLowStock()">
+          <ion-card class="stat-card low-stock" (click)="navigateToLowStock()" [class.clickable]="stats.lowStockProducts > 0">
             <ion-card-header>
               <ion-card-title>{{stats.lowStockProducts}}</ion-card-title>
               <ion-icon name="warning-outline"></ion-icon>
@@ -66,7 +66,7 @@
 
         <!-- Rupture de stock -->
         <ion-col size="12" size-md="3">
-          <ion-card class="stat-card out-of-stock">
+          <ion-card class="stat-card out-of-stock" (click)="navigateToLowStock()" [class.clickable]="stats.outOfStockProducts > 0">
             <ion-card-header>
               <ion-card-title>{{stats.outOfStockProducts}}</ion-card-title>
               <ion-icon name="close-circle-outline"></ion-icon>
@@ -103,7 +103,7 @@
             <ion-card-header>
               <ion-card-title>
                 <ion-icon name="alert-circle" color="warning"></ion-icon>
-                Produits à réapprovisionner
+                Produits à réapprovisionner (≤ 10 unités)
               </ion-card-title>
             </ion-card-header>
             <ion-card-content>
@@ -111,60 +111,63 @@
                 <ion-item *ngFor="let product of lowStockProducts" class="product-item">
                   <ion-label>
                     <h3>{{product.name}}</h3>
-                    <p>Stock: {{product.quantity}} / Min: {{product.minStock}}</p>
-                    <ion-progress-bar 
-                      [color]="getStockStatus(product) === 'low-stock' ? 'warning' : 'danger'"
-                      [value]="getStockPercentage(product) / 100">
-                    </ion-progress-bar>
+                    <p>Stock actuel: {{product.quantity}} unités</p>
+                    <p>Prix: {{product.price | currency:'EUR':'symbol'}}</p>
                   </ion-label>
-                  <ion-badge [color]="getStockStatus(product) === 'low-stock' ? 'warning' : 'danger'" slot="end">
-                    {{getStockStatus(product) === 'low-stock' ? 'Faible' : 'Rupture'}}
+                  <ion-badge *ngIf="product.quantity === 0" color="danger" slot="end">
+                    Rupture
+                  </ion-badge>
+                  <ion-badge *ngIf="product.quantity > 0 && product.quantity <= 10" color="warning" slot="end">
+                    Faible
                   </ion-badge>
                 </ion-item>
-                <ion-item *ngIf="lowStockProducts.length === 0">
-                  <ion-label class="text-center">
-                    <p>Aucun produit en stock faible 🎉</p>
-                  </ion-label>
-                </ion-item>
+                <div *ngIf="lowStockProducts.length === 0" class="empty-state">
+                  <ion-icon name="checkmark-circle" color="success" class="empty-icon"></ion-icon>
+                  <p>Aucun produit en stock faible</p>
+                </div>
               </ion-list>
             </ion-card-content>
           </ion-card>
         </ion-col>
 
         <!-- Mouvements récents -->
-        <ion-col size="12" size-lg="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>
-                <ion-icon name="swap-vertical" color="primary"></ion-icon>
-                Mouvements récents
-              </ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <ion-list lines="none">
-                <ion-item *ngFor="let movement of recentMovements" class="movement-item">
-                  <ion-icon 
-                    [name]="movement.type === 'in' ? 'arrow-down' : 'arrow-up'" 
-                    [color]="movement.type === 'in' ? 'success' : 'danger'" 
-                    slot="start">
-                  </ion-icon>
-                  <ion-label>
-                    <h3>{{movement.productName}}</h3>
-                    <p>{{movement.quantity}} unités - {{movement.date | date:'short'}}</p>
-                    <p class="reason">{{movement.reason}}</p>
-                  </ion-label>
-                  <ion-badge [color]="movement.type === 'in' ? 'success' : 'danger'" slot="end">
-                    {{movement.type === 'in' ? 'Entrée' : 'Sortie'}}
-                  </ion-badge>
-                </ion-item>
-              </ion-list>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
+<ion-col size="12" size-lg="6">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="swap-vertical" color="primary"></ion-icon>
+        Mouvements récents
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item *ngFor="let movement of recentMovements" class="movement-item">
+          <ion-icon 
+            [name]="movement.type === 'in' ? 'arrow-down' : 'arrow-up'" 
+            [color]="movement.type === 'in' ? 'success' : 'danger'" 
+            slot="start">
+          </ion-icon>
+          <ion-label>
+            <h3>{{movement.productName}}</h3>
+            <p>{{movement.quantity}} unités - {{movement.date | date:'short'}}</p>
+            <p class="reason">{{movement.reason}}</p>
+          </ion-label>
+          <ion-badge [color]="movement.type === 'in' ? 'success' : 'danger'" slot="end">
+            {{movement.type === 'in' ? 'Entrée' : 'Sortie'}}
+          </ion-badge>
+        </ion-item>
+        <div *ngIf="recentMovements.length === 0" class="empty-state">
+          <ion-icon name="time-outline" color="medium" class="empty-icon"></ion-icon>
+          <p>Aucun mouvement récent</p>
+        </div>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-col>
       </ion-row>
     </ion-grid>
 
-    <!-- Actions rapides - Affichage conditionnel selon le rôle -->
+    <!-- Actions rapides -->
     <ion-card class="quick-actions-card">
       <ion-card-header>
         <ion-card-title>
@@ -175,7 +178,6 @@
       <ion-card-content>
         <ion-grid>
           <ion-row>
-            <!-- Bouton "Voir le stock" - Réservé aux ADMIN -->
             <ion-col size="6" size-md="3" *ngIf="isAdmin()">
               <ion-button expand="block" color="primary" (click)="navigateToStock()">
                 <ion-icon name="cube-outline" slot="start"></ion-icon>
@@ -183,7 +185,6 @@
               </ion-button>
             </ion-col>
 
-            <!-- Bouton "Mouvements" - Visible par tous -->
             <ion-col size="6" size-md="3">
               <ion-button expand="block" color="secondary" (click)="navigateToMovements()">
                 <ion-icon name="swap-vertical" slot="start"></ion-icon>
@@ -191,50 +192,26 @@
               </ion-button>
             </ion-col>
 
-            <!-- Bouton "Stock faible" - Visible par tous -->
             <ion-col size="6" size-md="3">
-              <ion-button expand="block" color="warning" (click)="navigateToLowStock()">
+              <ion-button expand="block" color="warning" (click)="navigateToLowStock()" 
+                        [disabled]="stats.lowStockProducts === 0 && stats.outOfStockProducts === 0">
                 <ion-icon name="warning" slot="start"></ion-icon>
                 Stock faible
+                <ion-badge *ngIf="stats.lowStockProducts + stats.outOfStockProducts > 0" color="danger" slot="end">
+                  {{stats.lowStockProducts + stats.outOfStockProducts}}
+                </ion-badge>
               </ion-button>
             </ion-col>
 
-            <!-- Bouton "Nouveau produit" - Réservé aux ADMIN -->
             <ion-col size="6" size-md="3" *ngIf="isAdmin()">
               <ion-button expand="block" color="success" (click)="navigateToAddProduct()">
                 <ion-icon name="add-circle" slot="start"></ion-icon>
                 Nouveau produit
               </ion-button>
             </ion-col>
-
-            <!-- Boutons alternatifs pour les non-ADMIN -->
-            <ng-container *ngIf="!isAdmin()">
-              <!-- Bouton supplémentaire pour les utilisateurs normaux -->
-              <ion-col size="6" size-md="3">
-                <ion-button expand="block" color="tertiary" (click)="navigateToMovements()">
-                  <ion-icon name="list-outline" slot="start"></ion-icon>
-                  Mes activités
-                </ion-button>
-              </ion-col>
-            </ng-container>
           </ion-row>
         </ion-grid>
       </ion-card-content>
     </ion-card>
-
-    <!-- Section admin seulement -->
-    <div *ngIf="isAdmin()">
-      <ion-card class="admin-section">
-        <ion-card-header>
-          <ion-card-title>
-            <ion-icon name="shield-checkmark" color="danger"></ion-icon>
-            Outils Administrateur
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Vous avez accès aux fonctionnalités d'administration.</p>
-        </ion-card-content>
-      </ion-card>
-    </div>
   </div>
 </ion-content>

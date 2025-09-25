@@ -1,0 +1,156 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+      <ion-button (click)="retourDashboard()">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Gestion du Stock</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refreshData($event)">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="ajouterProduit()">
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Barre de recherche -->
+  <ion-searchbar 
+    [(ngModel)]="searchTerm"
+    (ionInput)="filtrerProduits()"
+    placeholder="Rechercher un produit ou catégorie..."
+    animated>
+  </ion-searchbar>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Chargement des produits...</p>
+  </div>
+
+  <!-- Liste des produits par catégorie -->
+  <div *ngIf="!isLoading">
+    <!-- Message si aucun produit -->
+    <div *ngIf="produitsFiltres.length === 0" class="empty-state">
+      <ion-icon name="cube-outline" class="empty-icon"></ion-icon>
+      <h3>Aucun produit trouvé</h3>
+      <p *ngIf="searchTerm">Aucun résultat pour "{{searchTerm}}"</p>
+      <ion-button (click)="ajouterProduit()" color="primary">
+        Ajouter un produit
+      </ion-button>
+    </div>
+
+    <!-- Accordéon par catégorie -->
+    <ion-accordion-group *ngIf="produitsFiltres.length > 0">
+      <ion-accordion *ngFor="let categorie of categories" [value]="categorie">
+        <ion-item slot="header" color="light">
+          <ion-label>
+            <h2>{{categorie}}</h2>
+            <p>{{produitsParCategorie[categorie].length}} produit(s)</p>
+          </ion-label>
+          <ion-badge color="primary" slot="end">
+            {{produitsParCategorie[categorie].length}}
+          </ion-badge>
+        </ion-item>
+
+        <div class="ion-padding" slot="content">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="12" size-md="6" size-lg="4" *ngFor="let produit of produitsParCategorie[categorie]">
+                <ion-card class="product-card">
+                  <ion-card-header>
+                    <ion-card-title class="product-name">{{produit.name}}</ion-card-title>
+                    <ion-badge [color]="getStockStatus(produit.quantity).color">
+                      {{getStockStatus(produit.quantity).text}}
+                    </ion-badge>
+                  </ion-card-header>
+
+                  <ion-card-content>
+                    <div class="product-info">
+                        <div class="product-details">
+                        <p><strong>Prix:</strong> {{produit.price | currency:'EUR':'symbol'}}</p>
+                        <p><strong>Stock:</strong> {{produit.quantity}} unités</p>
+                        <p><strong>Catégorie:</strong> {{getCategorie(produit)}}</p>
+                      </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="action-buttons">
+                      <ion-button 
+                        fill="clear" 
+                        size="small" 
+                        color="primary"
+                        (click)="voirDetails(produit)">
+                        <ion-icon name="eye-outline" slot="start"></ion-icon>
+                        Détails
+                      </ion-button>
+
+                      <ion-button 
+                        fill="clear" 
+                        size="small" 
+                        color="warning"
+                        (click)="modifierProduit(produit)">
+                        <ion-icon name="create-outline" slot="start"></ion-icon>
+                        Modifier
+                      </ion-button>
+
+                      <ion-button 
+                        fill="clear" 
+                        size="small" 
+                        color="danger"
+                        (click)="ouvrirActions(produit)">
+                        <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+                      </ion-button>
+                    </div>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+
+    <!-- Résumé du stock -->
+    <ion-card *ngIf="produitsFiltres.length > 0" class="summary-card">
+      <ion-card-header>
+        <ion-card-title>Résumé du Stock</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6" size-md="3">
+              <div class="summary-item">
+                <h3>{{produitsFiltres.length}}</h3>
+                <p>Produits totaux</p>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="summary-item">
+                <h3>{{categories.length}}</h3>
+                <p>Catégories</p>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="summary-item">
+                <h3>{{getLowStockCount()}}</h3>
+                <p>Stock faible</p>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="summary-item">
+                <h3>{{getOutOfStockCount()}}</h3>
+                <p>Rupture</p>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

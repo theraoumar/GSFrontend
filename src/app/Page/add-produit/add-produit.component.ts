@@ -17,7 +17,7 @@ import { ApiService, Product } from '../../services/api-service';
   templateUrl: './add-produit.component.html',
   styleUrls: ['./add-produit.component.scss'],
   standalone: true,
-   imports: [
+  imports: [
     CommonModule, 
     FormsModule,
     IonContent, IonHeader, IonTitle, IonToolbar, 
@@ -29,14 +29,11 @@ import { ApiService, Product } from '../../services/api-service';
   ]
 })
 export class AddProductPage {
-  product: Partial<Product> = {
+  product: any = {
     name: '',
-    category: '',
-    quantity: 0,
     price: 0,
-    minStock: 0,
-    supplier: '',
-    status: 'in-stock'
+    quantity: 0
+    // Retirer category, minStock, supplier, status qui n'existent pas dans votre entité
   };
 
   isLoading = false;
@@ -44,9 +41,10 @@ export class AddProductPage {
   alertHeader = '';
   alertMessage = '';
 
+  // Conserver les catégories si vous voulez les utiliser côté frontend seulement
   categories = [
     'Fruits',
-    'Légumes',
+    'Légumes', 
     'Produits Laitiers',
     'Viandes',
     'Poissons',
@@ -57,54 +55,53 @@ export class AddProductPage {
     'Autres'
   ];
 
-  suppliers = [
-    'Fournisseur A',
-    'Fournisseur B',
-    'Fournisseur C',
-    'Fournisseur D',
-    'Local',
-    'Importé'
-  ];
-
   constructor(
     private apiService: ApiService,
     private router: Router
   ) { }
 
   async onSubmit() {
-    // Validation du formulaire
+    // Vérifier l'authentification
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.showAlertMessage('Erreur', 'Vous devez être connecté pour ajouter un produit');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Validation du formulaire simplifiée
     if (!this.isFormValid()) {
       this.showAlertMessage('Erreur', 'Veuillez remplir tous les champs obligatoires');
       return;
     }
 
-    if (this.product.price! <= 0) {
+    if (this.product.price <= 0) {
       this.showAlertMessage('Erreur', 'Le prix doit être supérieur à 0');
       return;
     }
 
-    if (this.product.minStock! < 0) {
-      this.showAlertMessage('Erreur', 'Le stock minimum ne peut pas être négatif');
+    if (this.product.quantity < 0) {
+      this.showAlertMessage('Erreur', 'La quantité ne peut pas être négative');
       return;
     }
 
     this.isLoading = true;
 
     try {
-      // Préparer les données pour l'API
+      // Préparer les données EXACTEMENT comme votre entité Spring Boot
       const productData = {
         name: this.product.name,
-        category: this.product.category,
-        quantity: this.product.quantity || 0,
         price: this.product.price,
-        minStock: this.product.minStock,
-        supplier: this.product.supplier,
-        lastUpdated: new Date().toISOString(),
-        status: this.calculateStatus(this.product.quantity || 0, this.product.minStock || 0)
+        quantity: this.product.quantity
+        // Ne pas envoyer de champs qui n'existent pas dans l'entité
       };
+
+      console.log('Données envoyées au backend:', productData);
 
       // Appel à l'API
       const newProduct = await this.apiService.addProduct(productData).toPromise();
+      
+      console.log('Réponse du backend:', newProduct);
       
       this.showAlertMessage('Succès', 'Produit ajouté avec succès!');
       
@@ -114,13 +111,21 @@ export class AddProductPage {
       }, 2000);
 
     } catch (error: any) {
-      console.error('Erreur lors de l\'ajout du produit:', error);
+      console.error('Erreur complète:', error);
+      
       let errorMessage = 'Une erreur est survenue lors de l\'ajout du produit';
       
-      if (error.status === 400) {
-        errorMessage = 'Données invalides. Vérifiez les informations saisies.';
-      } else if (error.status === 409) {
-        errorMessage = 'Un produit avec ce nom existe déjà.';
+      if (error.status === 401) {
+        errorMessage = 'Non autorisé. Veuillez vous reconnecter.';
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 3000);
+      } else if (error.status === 400) {
+        errorMessage = 'Données invalides. Vérifiez le format des données.';
+      } else if (error.error && typeof error.error === 'string') {
+        errorMessage = error.error;
+      } else if (error.error && error.error.message) {
+        errorMessage = error.error.message;
       }
       
       this.showAlertMessage('Erreur', errorMessage);
@@ -131,16 +136,8 @@ export class AddProductPage {
 
   private isFormValid(): boolean {
     return !!this.product.name?.trim() && 
-           !!this.product.category && 
-           !!this.product.supplier &&
            this.product.price !== undefined &&
-           this.product.minStock !== undefined;
-  }
-
-  private calculateStatus(quantity: number, minStock: number): 'in-stock' | 'low-stock' | 'out-of-stock' {
-    if (quantity === 0) return 'out-of-stock';
-    if (quantity <= minStock) return 'low-stock';
-    return 'in-stock';
+           this.product.quantity !== undefined;
   }
 
   private showAlertMessage(header: string, message: string) {
@@ -153,45 +150,27 @@ export class AddProductPage {
     this.showAlert = false;
   }
 
-  // Calcul automatique du statut basé sur la quantité et le stock minimum
-  onQuantityChange() {
-    if (this.product.quantity !== undefined && this.product.minStock !== undefined) {
-      this.product.status = this.calculateStatus(this.product.quantity, this.product.minStock);
-    }
-  }
-
-  onMinStockChange() {
-    if (this.product.quantity !== undefined && this.product.minStock !== undefined) {
-      this.product.status = this.calculateStatus(this.product.quantity, this.product.minStock);
-    }
-  }
-
   // Réinitialiser le formulaire
   resetForm() {
     this.product = {
       name: '',
-      category: '',
-      quantity: 0,
       price: 0,
-      minStock: 0,
-      supplier: '',
-      status: 'in-stock'
+      quantity: 0
     };
   }
-  getStatusText(status: string | undefined): string {
-    switch (status) {
-      case 'in-stock': return 'En stock';
-      case 'low-stock': return 'Stock faible';
-      case 'out-of-stock': return 'Rupture de stock';
-      default: return 'Non défini';
-    }
+
+  // Méthodes pour l'affichage du statut (optionnel - côté frontend seulement)
+  getStatusText(): string {
+    const quantity = this.product.quantity || 0;
+    if (quantity === 0) return 'Rupture de stock';
+    if (quantity <= 10) return 'Stock faible'; // 10 comme valeur arbitraire
+    return 'En stock';
   }
-  getStatusColor(status: string | undefined): string {
-    switch (status) {
-      case 'in-stock': return 'success';
-      case 'low-stock': return 'warning';
-      case 'out-of-stock': return 'danger';
-      default: return 'medium';
-    }
+
+  getStatusColor(): string {
+    const quantity = this.product.quantity || 0;
+    if (quantity === 0) return 'danger';
+    if (quantity <= 10) return 'warning';
+    return 'success';
   }
 }

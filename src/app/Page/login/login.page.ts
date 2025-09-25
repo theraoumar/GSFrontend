@@ -46,9 +46,7 @@ export class LoginPage implements OnInit {
       
       if (res?.token) {
         localStorage.setItem('token', res.token);
-        
-        // Si le rôle n'est pas dans la réponse, mettre une valeur par défaut
-        const role = res.role || 'USER'; // Valeur par défaut
+        const role = res.role || 'USER';     
         localStorage.setItem('role', role);
         
         console.log('Rôle défini:', role);

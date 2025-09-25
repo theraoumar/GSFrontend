@@ -12,6 +12,15 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
 import { ApiService, Product, StockMovement } from '../../services/api-service';
 
+// Interface alignée avec votre entité backend
+interface Produit {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string; // Vous devrez peut-être adapter selon comment vous gérez les images
+}
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
@@ -30,8 +39,8 @@ import { ApiService, Product, StockMovement } from '../../services/api-service';
 export class DashboardPage implements OnInit {
   user: any = {};
   isLoading = true;
-  userRole: string = 'USER'; // Rôle par défaut
-  
+  userRole: string = 'USER';
+
   // Statistiques
   stats = {
     totalProducts: 0,
@@ -42,7 +51,8 @@ export class DashboardPage implements OnInit {
   };
 
   recentMovements: StockMovement[] = [];
-  lowStockProducts: Product[] = [];
+  lowStockProducts: Produit[] = [];
+  allProducts: Produit[] = [];
 
   constructor(
     private authService: AuthService,
@@ -55,18 +65,15 @@ export class DashboardPage implements OnInit {
     await this.loadDashboardData();
   }
 
-  // Charger le rôle de l'utilisateur
   private loadUserRole() {
     this.userRole = localStorage.getItem('role') || 'USER';
     console.log('Rôle utilisateur:', this.userRole);
   }
 
-  // Vérifier si l'utilisateur est admin
   isAdmin(): boolean {
     return this.userRole === 'ADMIN';
   }
 
-  // Vérifier si l'utilisateur a un rôle spécifique
   hasRole(role: string): boolean {
     return this.userRole === role;
   }
@@ -75,20 +82,27 @@ export class DashboardPage implements OnInit {
     try {
       this.isLoading = true;
       
-      // Charger les données en parallèle
-      const [products, movements, lowStock, stats] = await Promise.all([
-        this.apiService.getProducts().toPromise(),
-        this.apiService.getStockMovements().toPromise(),
-        this.apiService.getLowStockProducts().toPromise(),
-        this.apiService.getStockStats().toPromise()
-      ]);
-
-      // Mettre à jour les statistiques
-      this.updateStats(products || [], movements || [], lowStock || []);
+      // Charger les produits (adaptez selon votre API)
+      const products = await this.apiService.getProducts().toPromise();
+      this.allProducts = products || [];
       
-      // Données récentes
-      this.recentMovements = (movements || []).slice(0, 5);
-      this.lowStockProducts = lowStock || [];
+      // Calculer les statistiques
+      this.updateStats(this.allProducts);
+      
+      // Identifier les produits en stock faible (vous pouvez ajuster le seuil)
+      this.lowStockProducts = this.allProducts.filter(p => 
+        p.quantity <= 10 && p.quantity > 0 // Exemple: stock faible si <= 10 unités
+      );
+
+      // Charger les mouvements si disponible
+      try {
+        const movements = await this.apiService.getStockMovements().toPromise();
+        this.recentMovements = (movements || []).slice(0, 5);
+        this.stats.recentMovements = movements?.length || 0;
+      } catch (error) {
+        console.warn('Mouvements non disponibles:', error);
+        this.recentMovements = [];
+      }
 
     } catch (error) {
       console.error('Erreur lors du chargement du dashboard:', error);
@@ -97,27 +111,16 @@ export class DashboardPage implements OnInit {
     }
   }
 
-  private updateStats(products: Product[], movements: StockMovement[], lowStock: Product[]) {
+  private updateStats(products: Produit[]) {
     this.stats.totalProducts = products.length;
-    this.stats.lowStockProducts = lowStock.length;
+    this.stats.lowStockProducts = products.filter(p => p.quantity <= 10 && p.quantity > 0).length;
     this.stats.outOfStockProducts = products.filter(p => p.quantity === 0).length;
     this.stats.totalStockValue = products.reduce((sum, product) => 
       sum + (product.quantity * product.price), 0
     );
-    this.stats.recentMovements = movements.length;
   }
 
-  getStockStatus(product: Product): string {
-    if (product.quantity === 0) return 'out-of-stock';
-    if (product.quantity <= product.minStock) return 'low-stock';
-    return 'in-stock';
-  }
-
-  getStockPercentage(product: Product): number {
-    const maxStock = product.minStock * 3;
-    return Math.min((product.quantity / maxStock) * 100, 100);
-  }
-
+  // Méthodes de navigation
   navigateToStock() {
     this.router.navigate(['/stock']);
   }
@@ -141,7 +144,17 @@ export class DashboardPage implements OnInit {
 
   refreshData(event: any) {
     this.loadDashboardData().then(() => {
-      event.target.complete();
+      if (event && event.target) {
+        event.target.complete();
+      }
     });
+  }
+
+  // Méthode utilitaire pour gérer l'affichage des images
+  getProductImage(product: Produit): string {
+    if (product.image) {
+      return `data:image/jpeg;base64,${product.image}`;
+    }
+    return 'assets/images/product-placeholder.png';
   }
 }
