@@ -42,17 +42,24 @@ export class RegisterPage implements OnInit {
     }
 
     this.apiService.register(data.value).subscribe({
-      next: (res: any) => {
-        console.log("Réponse backend:", res);
-        if (res) {
-          if (res.token) {
-            localStorage.setItem('token', res.token);
-            localStorage.setItem('role', res.role || 'user');
-          }
+    next: (res: any) => {
+      console.log("Réponse backend register:", res);
+      
+      if (res) {
+        // Pour l'inscription, la réponse contient l'utilisateur avec le rôle
+        const role = res.role || 'USER';
+        
+        if (res.id) { // Si l'inscription réussit
           this.showAlert('Succès', 'Inscription réussie! Vous pouvez maintenant vous connecter.');
           this.router.navigate(['/login']);
         }
-      },
+      }
+    },
+  error: (error) => {
+    console.error('Erreur inscription:', error);
+    this.showAlert('Erreur', error.error?.message || 'Erreur lors de l\'inscription');
+  }
+});
       error: (err: any) => {
         console.error("Erreur backend:", err);
         let errorMessage = 'Erreur lors de l\'inscription. Veuillez réessayer.';
@@ -65,8 +72,8 @@ export class RegisterPage implements OnInit {
         
         this.showAlert('Erreur', errorMessage);
       }
-    });
-  }
+    };
+  
 
   goToLogin() {
     this.router.navigate(['/login']);

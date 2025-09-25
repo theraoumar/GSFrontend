@@ -30,6 +30,7 @@ import { ApiService, Product, StockMovement } from '../../services/api-service';
 export class DashboardPage implements OnInit {
   user: any = {};
   isLoading = true;
+  userRole: string = 'USER'; // Rôle par défaut
   
   // Statistiques
   stats = {
@@ -38,12 +39,6 @@ export class DashboardPage implements OnInit {
     outOfStockProducts: 0,
     totalStockValue: 0,
     recentMovements: 0
-  };
-
-  // Données pour les graphiques
-  stockData = {
-    categories: [],
-    values: []
   };
 
   recentMovements: StockMovement[] = [];
@@ -56,7 +51,24 @@ export class DashboardPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.loadUserRole();
     await this.loadDashboardData();
+  }
+
+  // Charger le rôle de l'utilisateur
+  private loadUserRole() {
+    this.userRole = localStorage.getItem('role') || 'USER';
+    console.log('Rôle utilisateur:', this.userRole);
+  }
+
+  // Vérifier si l'utilisateur est admin
+  isAdmin(): boolean {
+    return this.userRole === 'ADMIN';
+  }
+
+  // Vérifier si l'utilisateur a un rôle spécifique
+  hasRole(role: string): boolean {
+    return this.userRole === role;
   }
 
   async loadDashboardData() {
@@ -102,7 +114,7 @@ export class DashboardPage implements OnInit {
   }
 
   getStockPercentage(product: Product): number {
-    const maxStock = product.minStock * 3; // Valeur arbitraire pour la visualisation
+    const maxStock = product.minStock * 3;
     return Math.min((product.quantity / maxStock) * 100, 100);
   }
 
@@ -118,6 +130,10 @@ export class DashboardPage implements OnInit {
     this.router.navigate(['/low-stock']);
   }
 
+  navigateToAddProduct() {
+    this.router.navigate(['/add-product']);
+  }
+
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
@@ -128,8 +144,4 @@ export class DashboardPage implements OnInit {
       event.target.complete();
     });
   }
-
-  navigateToAddProduct() {
-  this.router.navigate(['/add-product']);
-}
 }

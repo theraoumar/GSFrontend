@@ -41,34 +41,44 @@ export class LoginPage implements OnInit {
   }
 
   this.apiService.login(data.value).subscribe({
-    next: (res:any) => {
+    next: (res: any) => {
       console.log("Réponse backend:", res);
+      
       if (res?.token) {
         localStorage.setItem('token', res.token);
-        localStorage.setItem('role', res.role);
+        
+        // Si le rôle n'est pas dans la réponse, mettre une valeur par défaut
+        const role = res.role || 'USER'; // Valeur par défaut
+        localStorage.setItem('role', role);
+        
+        console.log('Rôle défini:', role);
+        
         this.alertController.create({
           header: 'Succès',
           message: 'Connexion réussie!',
           buttons: ['OK']
         }).then(alert => alert.present());
+        
         this.router.navigate(['/dashboard']);
+      } else {
+        this.showAlert('Erreur', 'Token non reçu du serveur');
       }
     },
-    error: (err) => {
-      console.error("Erreur backend:", err);
-      this.error = 'Username ou mot de passe incorrect';
+    error: (error) => {
+      console.error('Erreur login:', error);
+      this.showAlert('Erreur', error.error?.message || 'Erreur de connexion');
     }
-  });
-}
-goToRegister() {
-    this.router.navigate(['/register']);
-  }
+  });}
+
+  goToRegister() {
+      this.router.navigate(['/register']);
+    }
   private async showAlert(header: string, message: string) {
-    const alert = await this.alertController.create({
-      header,
-      message,
-      buttons: ['OK']
-    });
-    await alert.present();
+      const alert = await this.alertController.create({
+        header,
+        message,
+        buttons: ['OK']
+      });
+      await alert.present();
+    }
   }
-}
