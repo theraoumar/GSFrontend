@@ -30,100 +30,43 @@ export class RegisterPage implements OnInit {
 
   ngOnInit() { }
 
-  // register(data: NgForm) {
-  //   if (!data.valid) {
-  //     this.error = 'Formulaire invalide';
-  //     return;
-  //   }
-
-  //   if (this.credentials.password !== this.credentials.confirmPassword) {
-  //     this.error = 'Les mots de passe ne correspondent pas';
-  //     return;
-  //   }
-
-  //   if (this.credentials.password.length < 6) {
-  //     this.error = 'Le mot de passe doit contenir au moins 6 caractères';
-  //     return;
-  //   }
-
-    
-
-  //   this.apiService.register(data.value).subscribe({
-  //     next: (res: any) => {
-  //       console.log("Réponse backend:", res);
-  //       if (res?.success || res?.token) {
-  //         // Si le backend retourne un token directement
-  //         if (res.token) {
-  //           console.log("Token reçu", res);
-  //           localStorage.setItem('token', res.token);
-  //           localStorage.setItem('role', res.role || 'user');
-  //         }
-          
-  //         this.alertController.create({
-  //           header: 'Succès',
-  //           message: 'Inscription réussie! Vous pouvez maintenant vous connecter.',
-  //           buttons: ['OK']
-  //         }).then(alert => {
-  //           alert.present();
-  //           alert.onDidDismiss().then(() => {
-  //             this.router.navigate(['/login']);
-  //           });
-  //         });
-  //       }
-  //     },
-  //     error: (err: any) => { // Type explicit pour err
-  //       console.error("Erreur backend:", err);
-  //       if (err.error?.message) {
-  //         this.error = err.error.message;
-  //       } else if (err.status === 400) {
-  //         this.error = 'Données invalides';
-  //       } else {
-  //         this.error = 'Erreur lors de l\'inscription. Veuillez réessayer.';
-  //       }
-  //     }
-  //   });
-  // }
-
-    register(data: NgForm) {
+  register(data: NgForm) {
     if (!data.valid) {
-      this.error = 'Formulaire invalide';
+      this.showAlert('Erreur', 'Formulaire invalide');
       return;
     }
+
+    if (this.credentials.password !== this.credentials.confirmPassword) {
+      this.showAlert('Erreur', 'Les mots de passe ne correspondent pas');
+      return;
+    }
+
     this.apiService.register(data.value).subscribe({
       next: (res: any) => {
         console.log("Réponse backend:", res);
         if (res) {
-        
-            console.log("Token reçu si y en a ", res);
+          if (res.token) {
             localStorage.setItem('token', res.token);
             localStorage.setItem('role', res.role || 'user');
-          
-          this.alertController.create({
-            header: 'Succès',
-            message: 'Inscription réussie! Vous pouvez maintenant vous connecter.',
-            buttons: ['OK']
-          }).then(alert => {
-            alert.present();
-            alert.onDidDismiss().then(() => {
-              this.router.navigate(['/login']);
-            });
-          });
+          }
+          this.showAlert('Succès', 'Inscription réussie! Vous pouvez maintenant vous connecter.');
+          this.router.navigate(['/login']);
         }
       },
-      error: (err: any) => { // Type explicit pour err
+      error: (err: any) => {
         console.error("Erreur backend:", err);
+        let errorMessage = 'Erreur lors de l\'inscription. Veuillez réessayer.';
+        
         if (err.error?.message) {
-          this.error = err.error.message;
+          errorMessage = err.error.message;
         } else if (err.status === 400) {
-          this.error = 'Données invalides';
-        } else {
-          this.error = 'Erreur lors de l\'inscription. Veuillez réessayer.';
+          errorMessage = 'Données invalides';
         }
+        
+        this.showAlert('Erreur', errorMessage);
       }
     });
-
-    }
-
+  }
 
   goToLogin() {
     this.router.navigate(['/login']);

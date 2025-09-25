@@ -1,0 +1,91 @@
+ion-content {
+  --background: #f5f5f5;
+}
+
+ion-card {
+  margin: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-card {
+  background: #f8f9fa;
+  
+  ion-grid {
+    ion-row {
+      border-bottom: 1px solid #e9ecef;
+      padding: 8px 0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+.status-help {
+  padding: 0 16px;
+  margin-top: -8px;
+  
+  small {
+    color: var(--ion-color-medium);
+  }
+}
+
+// Styles pour le statut
+.status-in-stock {
+  --color: var(--ion-color-success);
+  --background: #f0fff4;
+}
+
+.status-low-stock {
+  --color: var(--ion-color-warning);
+  --background: #fffaf0;
+}
+
+.status-out-of-stock {
+  --color: var(--ion-color-danger);
+  --background: #fff0f0;
+}
+
+// Boutons
+.submit-button {
+  margin: 8px;
+  --border-radius: 8px;
+  min-width: 200px;
+}
+
+.reset-button {
+  margin: 8px;
+  --border-radius: 8px;
+  min-width: 150px;
+}
+
+// Aperçu
+.preview-card {
+  ion-badge {
+    &.status-success {
+      --background: var(--ion-color-success);
+    }
+    
+    &.status-warning {
+      --background: var(--ion-color-warning);
+    }
+    
+    &.status-danger {
+      --background: var(--ion-color-danger);
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  ion-col {
+    margin-bottom: 8px;
+  }
+  
+  .submit-button, .reset-button {
+    min-width: unset;
+    width: 100%;
+    margin: 4px 0;
+  }
+}

@@ -3,8 +3,11 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Tableau de bord</ion-title>
+    <ion-title>Tableau de Bord Stock</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="refreshData($event)">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
       <ion-button (click)="logout()">
         <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
       </ion-button>
@@ -12,67 +15,194 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="welcome-section">
-    <h1>Bonjour, {{user?.name || 'Utilisateur'}}!</h1>
-    <p>Bienvenue dans votre espace personnel</p>
+<ion-content class="ion-padding" [class.loading]="isLoading">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Chargement des données...</p>
   </div>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12" size-md="4">
-        <ion-card (click)="goToFruits()" class="stat-card">
-          <ion-card-header>
-            <ion-card-title>{{stats.orders}}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-icon name="cart-outline"></ion-icon>
-            <p>Commandes</p>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      
-      <ion-col size="12" size-md="4">
-        <ion-card class="stat-card">
-          <ion-card-header>
-            <ion-card-title>{{stats.favorites}}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-icon name="heart-outline"></ion-icon>
-            <p>Favoris</p>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      
-      <ion-col size="12" size-md="4">
-        <ion-card class="stat-card">
-          <ion-card-header>
-            <ion-card-title>{{stats.cart}}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-icon name="basket-outline"></ion-icon>
-            <p>Dans le panier</p>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <!-- Content -->
+  <div *ngIf="!isLoading" class="dashboard-content">
+    <!-- En-tête de bienvenue -->
+    <div class="welcome-section">
+      <h1>Bonjour, {{user?.name || 'Gestionnaire'}}!</h1>
+      <p>Aperçu de votre gestion de stock</p>
+    </div>
 
-  <div class="quick-actions">
-    <h2>Actions rapides</h2>
-    <ion-list>
-      <ion-item button (click)="goToFruits()">
-        <ion-icon name="storefront-outline" slot="start"></ion-icon>
-        <ion-label>Voir les fruits disponibles</ion-label>
-      </ion-item>
-      <ion-item button (click)="goToOrders()">
-        <ion-icon name="receipt-outline" slot="start"></ion-icon>
-        <ion-label>Mes commandes</ion-label>
-      </ion-item>
-      <ion-item button (click)="goToProfile()">
-        <ion-icon name="person-outline" slot="start"></ion-icon>
-        <ion-label>Mon profil</ion-label>
-      </ion-item>
-    </ion-list>
+    <!-- Cartes de statistiques -->
+    <ion-grid>
+      <ion-row>
+        <!-- Produits totaux -->
+        <ion-col size="12" size-md="3">
+          <ion-card class="stat-card total-products">
+            <ion-card-header>
+              <ion-card-title>{{stats.totalProducts}}</ion-card-title>
+              <ion-icon name="cube-outline"></ion-icon>
+            </ion-card-header>
+            <ion-card-content>
+              <p>Produits en stock</p>
+              <ion-badge color="primary">Total</ion-badge>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Stock faible -->
+        <ion-col size="12" size-md="3">
+          <ion-card class="stat-card low-stock" (click)="navigateToLowStock()">
+            <ion-card-header>
+              <ion-card-title>{{stats.lowStockProducts}}</ion-card-title>
+              <ion-icon name="warning-outline"></ion-icon>
+            </ion-card-header>
+            <ion-card-content>
+              <p>Stock faible</p>
+              <ion-badge color="warning">Attention</ion-badge>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Rupture de stock -->
+        <ion-col size="12" size-md="3">
+          <ion-card class="stat-card out-of-stock">
+            <ion-card-header>
+              <ion-card-title>{{stats.outOfStockProducts}}</ion-card-title>
+              <ion-icon name="close-circle-outline"></ion-icon>
+            </ion-card-header>
+            <ion-card-content>
+              <p>Rupture de stock</p>
+              <ion-badge color="danger">Urgent</ion-badge>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Valeur totale -->
+        <ion-col size="12" size-md="3">
+          <ion-card class="stat-card total-value">
+            <ion-card-header>
+              <ion-card-title>{{stats.totalStockValue | currency:'EUR':'symbol':'1.0-0'}}</ion-card-title>
+              <ion-icon name="cash-outline"></ion-icon>
+            </ion-card-header>
+            <ion-card-content>
+              <p>Valeur du stock</p>
+              <ion-badge color="success">Valeur</ion-badge>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Section principale -->
+    <ion-grid>
+      <ion-row>
+        <!-- Produits en stock faible -->
+        <ion-col size="12" size-lg="6">
+          <ion-card class="alert-section">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="alert-circle" color="warning"></ion-icon>
+                Produits à réapprovisionner
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="none">
+                <ion-item *ngFor="let product of lowStockProducts" class="product-item">
+                  <ion-label>
+                    <h3>{{product.name}}</h3>
+                    <p>Stock: {{product.quantity}} / Min: {{product.minStock}}</p>
+                    <ion-progress-bar 
+                      [color]="getStockStatus(product) === 'low-stock' ? 'warning' : 'danger'"
+                      [value]="getStockPercentage(product) / 100">
+                    </ion-progress-bar>
+                  </ion-label>
+                  <ion-badge [color]="getStockStatus(product) === 'low-stock' ? 'warning' : 'danger'" slot="end">
+                    {{getStockStatus(product) === 'low-stock' ? 'Faible' : 'Rupture'}}
+                  </ion-badge>
+                </ion-item>
+                <ion-item *ngIf="lowStockProducts.length === 0">
+                  <ion-label class="text-center">
+                    <p>Aucun produit en stock faible 🎉</p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Mouvements récents -->
+        <ion-col size="12" size-lg="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="swap-vertical" color="primary"></ion-icon>
+                Mouvements récents
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="none">
+                <ion-item *ngFor="let movement of recentMovements" class="movement-item">
+                  <ion-icon 
+                    [name]="movement.type === 'in' ? 'arrow-down' : 'arrow-up'" 
+                    [color]="movement.type === 'in' ? 'success' : 'danger'" 
+                    slot="start">
+                  </ion-icon>
+                  <ion-label>
+                    <h3>{{movement.productName}}</h3>
+                    <p>{{movement.quantity}} unités - {{movement.date | date:'short'}}</p>
+                    <p class="reason">{{movement.reason}}</p>
+                  </ion-label>
+                  <ion-badge [color]="movement.type === 'in' ? 'success' : 'danger'" slot="end">
+                    {{movement.type === 'in' ? 'Entrée' : 'Sortie'}}
+                  </ion-badge>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Actions rapides -->
+    <ion-card class="quick-actions-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="flash" color="primary"></ion-icon>
+          Actions rapides
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6" size-md="3">
+              <ion-button expand="block" color="primary" (click)="navigateToStock()">
+                <ion-icon name="cube-outline" slot="start"></ion-icon>
+                Voir le stock
+              </ion-button>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <ion-button expand="block" color="secondary" (click)="navigateToMovements()">
+                <ion-icon name="swap-vertical" slot="start"></ion-icon>
+                Mouvements
+              </ion-button>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <ion-button expand="block" color="warning" (click)="navigateToLowStock()">
+                <ion-icon name="warning" slot="start"></ion-icon>
+                Stock faible
+              </ion-button>
+            </ion-col>
+           <!-- Remplacer le bouton existant -->
+            <ion-col size="6" size-md="3">
+              <ion-button expand="block" color="success" (click)="navigateToAddProduct()">
+                <ion-icon name="add-circle" slot="start"></ion-icon>
+                Nouveau produit
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
   </div>
+
+  <!-- Pull to refresh -->
+ 
 </ion-content>
