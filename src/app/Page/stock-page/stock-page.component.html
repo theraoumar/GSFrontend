@@ -11,7 +11,8 @@
       <ion-button (click)="refreshData($event)">
         <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="ajouterProduit()">
+      <!-- Cacher le bouton ajouter pour les utilisateurs lambda -->
+      <ion-button *ngIf="isAdmin()" (click)="ajouterProduit()">
         <ion-icon name="add-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -40,7 +41,8 @@
       <ion-icon name="cube-outline" class="empty-icon"></ion-icon>
       <h3>Aucun produit trouvé</h3>
       <p *ngIf="searchTerm">Aucun résultat pour "{{searchTerm}}"</p>
-      <ion-button (click)="ajouterProduit()" color="primary">
+
+      <ion-button *ngIf="isAdmin()" (click)="ajouterProduit()" color="primary">
         Ajouter un produit
       </ion-button>
     </div>
@@ -72,14 +74,13 @@
 
                   <ion-card-content>
                     <div class="product-info">
-                        <div class="product-details">
+                      <div class="product-details">
                         <p><strong>Prix:</strong> {{produit.price | currency:'EUR':'symbol'}}</p>
                         <p><strong>Stock:</strong> {{produit.quantity}} unités</p>
                         <p><strong>Catégorie:</strong> {{getCategorie(produit)}}</p>
                       </div>
                     </div>
 
-                    <!-- Boutons d'action -->
                     <div class="action-buttons">
                       <ion-button 
                         fill="clear" 
@@ -91,6 +92,7 @@
                       </ion-button>
 
                       <ion-button 
+                        *ngIf="isAdmin()"
                         fill="clear" 
                         size="small" 
                         color="warning"
@@ -100,6 +102,7 @@
                       </ion-button>
 
                       <ion-button 
+                        *ngIf="isAdmin()"
                         fill="clear" 
                         size="small" 
                         color="danger"
@@ -116,7 +119,6 @@
       </ion-accordion>
     </ion-accordion-group>
 
-    <!-- Résumé du stock -->
     <ion-card *ngIf="produitsFiltres.length > 0" class="summary-card">
       <ion-card-header>
         <ion-card-title>Résumé du Stock</ion-card-title>

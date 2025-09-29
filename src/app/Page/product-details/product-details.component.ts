@@ -31,6 +31,7 @@ export class ProductDetailsComponent implements OnInit {
   produit: Product | null = null;
   isLoading = true;
   produitId!: number;
+  userRole: string = 'USER';
 
   constructor(
     private route: ActivatedRoute,
@@ -42,6 +43,19 @@ export class ProductDetailsComponent implements OnInit {
   ngOnInit() {
     this.produitId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadProduit();
+    this.loadUserRole();
+  }
+  private loadUserRole() {
+    this.userRole = localStorage.getItem('role') || 'USER';
+    console.log('Rôle utilisateur:', this.userRole);
+  }
+
+  isAdmin(): boolean {
+    return this.userRole === 'ADMIN';
+  }
+
+  hasRole(role: string): boolean {
+    return this.userRole === role;
   }
 
   async loadProduit() {

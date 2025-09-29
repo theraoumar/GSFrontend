@@ -1,3 +1,4 @@
+import { AuthService } from './../../services/auth-service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -37,51 +38,66 @@ interface Produit {
     IonAccordion, IonAccordionGroup
   ]
 })
-export class StockPageComponent  implements OnInit {
+export class StockPageComponent implements OnInit {
 
   produits: Produit[] = [];
   produitsFiltres: Produit[] = [];
   isLoading = true;
   searchTerm = '';
-
+  userRole: string = 'USER';
   // Groupes par catégorie
   produitsParCategorie: { [key: string]: Produit[] } = {};
   categories: string[] = [];
 
   constructor(
     private apiService: ApiService,
+    private AuthService: AuthService,
     private router: Router,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController
   ) { }
+
   async ngOnInit() {
+    this.loadUserRole();
     await this.loadProduits();
   }
 
-   async loadProduits() {
+  private loadUserRole() {
+    this.userRole = localStorage.getItem('role') || 'USER';
+    console.log('Rôle utilisateur:', this.userRole);
+  }
+
+  isAdmin(): boolean {
+    return this.userRole === 'ADMIN';
+  }
+
+  hasRole(role: string): boolean {
+    return this.userRole === role;
+  }
+
+  async loadProduits() {
     try {
       this.isLoading = true;
       const produits = await this.apiService.getProducts().toPromise();
       
-      // Transformez les Product en Produit avec une catégorie par défaut
       this.produits = (produits || []).map(produit => ({
         ...produit,
-        categorie: (produit as any).categorie || 'Non catégorisé' // Utilisez la catégorie existante ou une valeur par défaut
+        categorie: (produit as any).categorie || 'Non catégorisé'
       }));
       
       this.produitsFiltres = [...this.produits];
       this.grouperParCategorie();
     } catch (error) {
       console.error('Erreur lors du chargement des produits:', error);
-      } finally {
+    } finally {
       this.isLoading = false;
     }
   }
+
   grouperParCategorie() {
     this.produitsParCategorie = {};
     
     this.produitsFiltres.forEach(produit => {
-      // Utilisez une propriété existante ou créez une catégorie basée sur d'autres critères
       const categorie = this.getCategorie(produit);
       if (!this.produitsParCategorie[categorie]) {
         this.produitsParCategorie[categorie] = [];
@@ -91,14 +107,11 @@ export class StockPageComponent  implements OnInit {
     
     this.categories = Object.keys(this.produitsParCategorie).sort();
   }
+
   getCategorie(produit: Produit): string {
-    // Si votre Product a une propriété category, utilisez-la
     if ((produit as any).categorie) {
-        return produit.categorie || 'Non catégorisé';;
-    }
-    
-    // Sinon, créez des catégories basées sur d'autres critères
-    // Par exemple, par prix ou par nom
+        return produit.categorie || 'Non catégorisé';
+    }    
     if (produit.price < 10) return 'Économique';
     if (produit.price < 50) return 'Standard';
     if (produit.price >= 50) return 'Premium';
@@ -127,10 +140,12 @@ export class StockPageComponent  implements OnInit {
     } else {
       return { color: 'success', text: 'Bon' };
     }
-    }
+  }
 
-  // Actions sur les produits
+  // Actions sur les produits - restreintes aux admins
   async ouvrirActions(produit: Produit) {
+    if (!this.isAdmin) return; // Empêcher l'accès aux non-admins
+
     const actionSheet = await this.actionSheetController.create({
       header: produit.name,
       buttons: [
@@ -172,10 +187,13 @@ export class StockPageComponent  implements OnInit {
   }
 
   modifierProduit(produit: Produit) {
+    if (!this.isAdmin) return; // Empêcher l'accès aux non-admins
     this.router.navigate(['/edit-product', produit.id]);
   }
 
   async supprimerProduit(produit: Produit) {
+    if (!this.isAdmin) return; 
+
     const alert = await this.alertController.create({
       header: 'Confirmer la suppression',
       message: `Êtes-vous sûr de vouloir supprimer "${produit.name}" ?`,
@@ -203,6 +221,7 @@ export class StockPageComponent  implements OnInit {
   }
 
   ajouterProduit() {
+    if (!this.isAdmin) return; // Empêcher l'accès aux non-admins
     this.router.navigate(['/add-product']);
   }
 
@@ -217,13 +236,12 @@ export class StockPageComponent  implements OnInit {
       }
     });
   }
-  // Dans la classe StockPageComponent
-getLowStockCount(): number {
-  return this.produitsFiltres.filter(p => p.quantity <= 10 && p.quantity > 0).length;
-}
 
-getOutOfStockCount(): number {
-  return this.produitsFiltres.filter(p => p.quantity === 0).length;
-}
+  getLowStockCount(): number {
+    return this.produitsFiltres.filter(p => p.quantity <= 10 && p.quantity > 0).length;
+  }
 
+  getOutOfStockCount(): number {
+    return this.produitsFiltres.filter(p => p.quantity === 0).length;
+  }
 }

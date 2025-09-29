@@ -95,12 +95,12 @@
 
         <!-- Actions -->
         <div class="action-buttons">
-          <ion-button expand="block" color="primary" (click)="modifierProduit()">
+          <ion-button *ngIf="isAdmin()" expand="block" color="primary" (click)="modifierProduit()">
             <ion-icon name="create-outline" slot="start"></ion-icon>
             Modifier le produit
           </ion-button>
           
-          <ion-button expand="block" color="danger" (click)="supprimerProduit()">
+          <ion-button *ngIf="isAdmin()" expand="block" color="danger" (click)="supprimerProduit()">
             <ion-icon name="trash-outline" slot="start"></ion-icon>
             Supprimer le produit
           </ion-button>
