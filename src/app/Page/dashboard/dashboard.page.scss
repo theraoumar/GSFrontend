@@ -223,3 +223,9 @@
     font-weight: bold;
   }
 }
+// Style pour le bouton logout
+ion-button[color="danger"] {
+  --background: var(--ion-color-danger);
+  --background-hover: var(--ion-color-danger-shade);
+  --color: white;
+}

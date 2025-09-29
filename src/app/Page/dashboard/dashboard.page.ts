@@ -139,6 +139,9 @@ export class DashboardPage implements OnInit {
 
   logout() {
     this.authService.logout();
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('user');
     this.router.navigate(['/login']);
   }
 
@@ -150,11 +153,5 @@ export class DashboardPage implements OnInit {
     });
   }
 
-  // Méthode utilitaire pour gérer l'affichage des images
-  getProductImage(product: Produit): string {
-    if (product.image) {
-      return `data:image/jpeg;base64,${product.image}`;
-    }
-    return 'assets/images/product-placeholder.png';
-  }
+  
 }

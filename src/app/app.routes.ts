@@ -6,6 +6,8 @@ import { RegisterPage } from './Page/register/register.page';
 import { DashboardPage } from './Page/dashboard/dashboard.page';
 import { AddProductPage } from './Page/add-produit/add-produit.component';
 import { StockPageComponent } from './Page/stock-page/stock-page.component';
+import { ProductDetailsComponent } from './Page/product-details/product-details.component';
+import { EditProductComponent } from './Page/edit-product/edit-product.component';
 
 export const routes: Routes = [
   {
@@ -30,6 +32,12 @@ export const routes: Routes = [
   },
   { path: 'stock', 
     component: StockPageComponent
+  },
+  { path: 'product-details/:id',
+    component: ProductDetailsComponent 
+  },
+  { path: 'edit-product/:id',
+    component: EditProductComponent 
   },
   {
     path: '',

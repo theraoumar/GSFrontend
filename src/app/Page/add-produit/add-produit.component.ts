@@ -32,8 +32,8 @@ export class AddProductPage {
   product: any = {
     name: '',
     price: 0,
-    quantity: 0
-    // Retirer category, minStock, supplier, status qui n'existent pas dans votre entité
+    quantity: 0,
+    categorie: '' 
   };
 
   isLoading = false;
@@ -84,7 +84,6 @@ export class AddProductPage {
       this.showAlertMessage('Erreur', 'La quantité ne peut pas être négative');
       return;
     }
-
     this.isLoading = true;
 
     try {
@@ -92,8 +91,9 @@ export class AddProductPage {
       const productData = {
         name: this.product.name,
         price: this.product.price,
-        quantity: this.product.quantity
-        // Ne pas envoyer de champs qui n'existent pas dans l'entité
+        quantity: this.product.quantity,
+        categorie: this.product.categorie?.trim() || undefined
+    
       };
 
       console.log('Données envoyées au backend:', productData);
@@ -137,7 +137,8 @@ export class AddProductPage {
   private isFormValid(): boolean {
     return !!this.product.name?.trim() && 
            this.product.price !== undefined &&
-           this.product.quantity !== undefined;
+           this.product.quantity !== undefined &&
+           this.product.categorie !== undefined; 
   }
 
   private showAlertMessage(header: string, message: string) {
@@ -155,7 +156,8 @@ export class AddProductPage {
     this.product = {
       name: '',
       price: 0,
-      quantity: 0
+      quantity: 0,
+      categorie: ''
     };
   }
 

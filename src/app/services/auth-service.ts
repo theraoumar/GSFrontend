@@ -62,8 +62,15 @@ export class AuthService {
     return this.currentUser !== null;
   }
 
-  async logout(): Promise<void> {
-    this.currentUser = null;
-    await Preferences.remove({ key: 'user' });
+  logout() {
+    // Supprimer les données d'authentification
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('user');
+    
+    // Optionnel: Supprimer d'autres données utilisateur
+    localStorage.clear();
+    
+    console.log('Utilisateur déconnecté');
   }
 }

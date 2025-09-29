@@ -1,0 +1,132 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+      <ion-button (click)="retourStock()">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Détails du Produit</ion-title>
+    <ion-buttons slot="end">
+      <!-- Boutons visibles seulement pour l'admin -->
+      <ion-button *ngIf="isAdmin" (click)="modifierProduit()" color="warning">
+        <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="isAdmin" (click)="supprimerProduit()" color="danger">
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Chargement des détails...</p>
+  </div>
+
+  <!-- Détails du produit -->
+  <div *ngIf="!isLoading && produit" class="product-details">
+    <ion-card>
+      <ion-card-header class="product-header">
+        <ion-card-title>{{produit.name}}</ion-card-title>
+        <ion-badge [color]="getStockStatus(produit.quantity).color">
+          {{getStockStatus(produit.quantity).text}}
+        </ion-badge>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <div class="product-info">
+                <h3>Informations du produit</h3>
+                
+                <div class="info-item">
+                  <strong>Nom:</strong>
+                  <span>{{produit.name}}</span>
+                </div>
+
+                <div class="info-item">
+                  <strong>Prix unitaire:</strong>
+                  <span>{{produit.price | currency:'EUR':'symbol'}}</span>
+                </div>
+
+                <div class="info-item">
+                  <strong>Quantité en stock:</strong>
+                  <span>{{produit.quantity}} unités</span>
+                </div>
+
+                <div class="info-item">
+                  <strong>Valeur totale:</strong>
+                  <span>{{(produit.price * produit.quantity) | currency:'EUR':'symbol'}}</span>
+                </div>
+
+                <!-- AFFICHAGE DE LA CATÉGORIE -->
+                 <div class="info-item">
+                  <strong>Catégorie:</strong>
+                  <span>
+                    <ion-badge *ngIf="produit.categorie" color="tertiary">
+                      {{produit.categorie}}
+                    </ion-badge>
+                    <span *ngIf="!produit.categorie" class="no-category">
+                      Non catégorisé
+                    </span>
+                  </span>
+                </div>
+
+                <div class="info-item">
+                  <strong>Statut du stock:</strong>
+                  <ion-badge [color]="getStockStatus(produit.quantity).color">
+                    {{getStockStatus(produit.quantity).text}}
+                  </ion-badge>
+                </div>
+
+                <!-- Informations supplémentaires -->
+                <div class="info-item">
+                  <strong>ID du produit:</strong>
+                  <span>#{{produit.id}}</span>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Actions - visibles seulement pour l'admin -->
+        <div *ngIf="isAdmin" class="action-buttons">
+          <ion-button expand="block" color="primary" (click)="modifierProduit()">
+            <ion-icon name="create-outline" slot="start"></ion-icon>
+            Modifier le produit
+          </ion-button>
+          
+          <ion-button expand="block" color="danger" (click)="supprimerProduit()">
+            <ion-icon name="trash-outline" slot="start"></ion-icon>
+            Supprimer le produit
+          </ion-button>
+        </div>
+
+        <!-- Message pour les utilisateurs lambda -->
+        <div *ngIf="!isAdmin" class="read-only-message">
+          <ion-card color="light">
+            <ion-card-content>
+              <ion-icon name="eye-outline" class="info-icon"></ion-icon>
+              <h4>Mode consultation</h4>
+              <p>Vous avez un accès en lecture seule. Seuls les administrateurs peuvent modifier ou supprimer les produits.</p>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Produit non trouvé -->
+  <div *ngIf="!isLoading && !produit" class="empty-state">
+    <ion-icon name="alert-circle-outline" class="empty-icon"></ion-icon>
+    <h3>Produit non trouvé</h3>
+    <p>Le produit que vous recherchez n'existe pas ou a été supprimé.</p>
+    <ion-button (click)="retourStock()" color="primary">
+      Retour au stock
+    </ion-button>
+  </div>
+</ion-content>

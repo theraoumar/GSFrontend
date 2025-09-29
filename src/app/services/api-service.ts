@@ -8,6 +8,7 @@ export interface Product {
   name: string;
   quantity: number;
   price: number;
+  categorie: string;
 }
 
 export interface StockMovement {
