@@ -8,11 +8,10 @@
     </ion-buttons>
     <ion-title>Détails du Produit</ion-title>
     <ion-buttons slot="end">
-      <!-- Boutons visibles seulement pour l'admin -->
-      <ion-button *ngIf="isAdmin" (click)="modifierProduit()" color="warning">
+      <ion-button (click)="modifierProduit()" color="warning">
         <ion-icon name="create-outline" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button *ngIf="isAdmin" (click)="supprimerProduit()" color="danger">
+      <ion-button (click)="supprimerProduit()" color="danger">
         <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -76,6 +75,7 @@
                   </span>
                 </div>
 
+
                 <div class="info-item">
                   <strong>Statut du stock:</strong>
                   <ion-badge [color]="getStockStatus(produit.quantity).color">
@@ -93,8 +93,8 @@
           </ion-row>
         </ion-grid>
 
-        <!-- Actions - visibles seulement pour l'admin -->
-        <div *ngIf="isAdmin" class="action-buttons">
+        <!-- Actions -->
+        <div class="action-buttons">
           <ion-button expand="block" color="primary" (click)="modifierProduit()">
             <ion-icon name="create-outline" slot="start"></ion-icon>
             Modifier le produit
@@ -104,17 +104,6 @@
             <ion-icon name="trash-outline" slot="start"></ion-icon>
             Supprimer le produit
           </ion-button>
-        </div>
-
-        <!-- Message pour les utilisateurs lambda -->
-        <div *ngIf="!isAdmin" class="read-only-message">
-          <ion-card color="light">
-            <ion-card-content>
-              <ion-icon name="eye-outline" class="info-icon"></ion-icon>
-              <h4>Mode consultation</h4>
-              <p>Vous avez un accès en lecture seule. Seuls les administrateurs peuvent modifier ou supprimer les produits.</p>
-            </ion-card-content>
-          </ion-card>
         </div>
       </ion-card-content>
     </ion-card>
