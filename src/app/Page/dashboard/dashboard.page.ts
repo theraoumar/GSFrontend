@@ -18,7 +18,6 @@ interface Produit {
   name: string;
   price: number;
   quantity: number;
-  image?: string; // Vous devrez peut-être adapter selon comment vous gérez les images
 }
 
 @Component({

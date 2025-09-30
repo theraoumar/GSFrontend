@@ -107,7 +107,7 @@ export class AddProductPage {
       
       // Redirection après 2 secondes
       setTimeout(() => {
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/stock']);
       }, 2000);
 
     } catch (error: any) {

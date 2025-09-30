@@ -1,17 +1,19 @@
-import { AuthService } from './../../services/auth-service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../services/api-service';
+import { AuthService } from './../../services/auth-service';
 import { 
   IonContent, IonHeader, IonTitle, IonToolbar, 
   IonButton, IonButtons, IonMenuButton, IonItem, 
   IonList, IonIcon, IonCard, IonCardHeader, 
   IonCardTitle, IonCardContent, IonGrid, IonRow, 
   IonCol, IonLabel, IonBadge, IonSpinner, IonSearchbar,
-  IonAccordion, IonAccordionGroup, AlertController,
-  ModalController, ActionSheetController
+  IonAccordion, IonAccordionGroup, AlertController,IonRefresher,
+  ModalController, ActionSheetController, RefresherCustomEvent,
+  IonRefresherContent
 } from '@ionic/angular/standalone';
 
 interface Produit {
@@ -35,23 +37,26 @@ interface Produit {
     IonList, IonIcon, IonCard, IonCardHeader, 
     IonCardTitle, IonCardContent, IonGrid, IonRow, 
     IonCol, IonLabel, IonBadge, IonSpinner, IonSearchbar,
-    IonAccordion, IonAccordionGroup
+    IonAccordion, IonAccordionGroup, IonRefresher, IonRefresherContent,
   ]
 })
-export class StockPageComponent implements OnInit {
+export class StockPageComponent implements OnInit, OnDestroy {
 
   produits: Produit[] = [];
   produitsFiltres: Produit[] = [];
   isLoading = true;
   searchTerm = '';
   userRole: string = 'USER';
+  
   // Groupes par catégorie
   produitsParCategorie: { [key: string]: Produit[] } = {};
   categories: string[] = [];
 
+  private refreshSubscription: Subscription = new Subscription();
+
   constructor(
     private apiService: ApiService,
-    private AuthService: AuthService,
+    private authService: AuthService,
     private router: Router,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController
@@ -59,6 +64,7 @@ export class StockPageComponent implements OnInit {
 
   async ngOnInit() {
     this.loadUserRole();
+    this.setupAutoRefresh();
     await this.loadProduits();
   }
 
@@ -73,6 +79,30 @@ export class StockPageComponent implements OnInit {
 
   hasRole(role: string): boolean {
     return this.userRole === role;
+  }
+
+  ngOnDestroy() {
+    // Nettoyer les subscriptions
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
+  }
+  setupAutoRefresh() {
+    this.refreshSubscription = this.apiService.refresh$.subscribe(shouldRefresh => {
+      if (shouldRefresh) {
+        console.log('Rafraîchissement automatique déclenché depuis le service');
+        this.loadProduits();
+      }
+    });
+  }
+
+  async manualRefresh() {
+    this.isLoading = true;
+    try {
+      await this.loadProduits();
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   async loadProduits() {
@@ -144,7 +174,7 @@ export class StockPageComponent implements OnInit {
 
   // Actions sur les produits - restreintes aux admins
   async ouvrirActions(produit: Produit) {
-    if (!this.isAdmin) return; // Empêcher l'accès aux non-admins
+    if (!this.isAdmin()) return; // Correction: ajouter les parenthèses
 
     const actionSheet = await this.actionSheetController.create({
       header: produit.name,
@@ -187,12 +217,12 @@ export class StockPageComponent implements OnInit {
   }
 
   modifierProduit(produit: Produit) {
-    if (!this.isAdmin) return; // Empêcher l'accès aux non-admins
+    if (!this.isAdmin()) return; // Correction: ajouter les parenthèses
     this.router.navigate(['/edit-product', produit.id]);
   }
 
   async supprimerProduit(produit: Produit) {
-    if (!this.isAdmin) return; 
+    if (!this.isAdmin()) return;
 
     const alert = await this.alertController.create({
       header: 'Confirmer la suppression',
@@ -208,9 +238,12 @@ export class StockPageComponent implements OnInit {
           handler: async () => {
             try {
               await this.apiService.deleteProduct(produit.id).toPromise();
-              this.loadProduits(); // Recharger la liste
+              // Le rafraîchissement automatique se fera via l'abonnement refresh$
+              // car deleteProduct() appelle triggerRefresh()
             } catch (error) {
               console.error('Erreur lors de la suppression:', error);
+              // Même en cas d'erreur, déclencher le rafraîchissement
+              this.apiService.triggerRefresh();
             }
           }
         }
@@ -221,7 +254,7 @@ export class StockPageComponent implements OnInit {
   }
 
   ajouterProduit() {
-    if (!this.isAdmin) return; // Empêcher l'accès aux non-admins
+    if (!this.isAdmin()) return; // Correction: ajouter les parenthèses
     this.router.navigate(['/add-product']);
   }
 
@@ -229,12 +262,16 @@ export class StockPageComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
-  refreshData(event: any) {
-    this.loadProduits().then(() => {
-      if (event && event.target) {
+  // Correction de la fonction refreshData avec le bon type
+  async refreshData(event: RefresherCustomEvent) {
+    try {
+      this.loadProduits();
+    } finally {
+      // S'assurer que event.target existe et a la méthode complete
+      if (event && event.target && typeof event.target.complete === 'function') {
         event.target.complete();
       }
-    });
+    }
   }
 
   getLowStockCount(): number {
